@@ -1,26 +1,89 @@
-<!DOCTYPE html>
-<html lang="de">
+
+<!doctype html>
+<html lang="de-CH">
 <head>
-  <meta charset="UTF-8">
-  <title>Vault Mobile v2.6.1</title>
-  <link rel="manifest" href="manifest.webmanifest?v=2610">
-  <link rel="stylesheet" href="style.css?v=2610">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js"></script>
-  <script defer src="app.js?v=2610"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vault Mobile v2.6.2</title>
+  <meta name="theme-color" content="#0a84ff">
+  <link rel="manifest" href="manifest.webmanifest?v=2620">
+  <link rel="stylesheet" href="styles.css?v=2620">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
   <header>
-    <h1>Vault Mobile v2.6.1</h1>
-    <p>Auto-Login aktiv (PW = <code>test1234</code>)</p>
+    <h1>Vault Mobile v2.6.2</h1>
+    <div id="status">Auto-Login aktiv (PW = test1234)</div>
   </header>
-  <main>
-    <nav>
-      <button onclick="goScan()">📸 Kontoauszug scannen</button>
-      <button onclick="goMonthOverview()">📊 Monatsübersicht</button>
-      <button onclick="goYearOverview()">📅 Jahresübersicht</button>
-    </nav>
-    <section id="screen"></section>
+
+  <!-- Seite 1: Hauptmenü -->
+  <main id="page-home" class="card">
+    <h2>Was möchtest du tun?</h2>
+    <div class="menu">
+      <button class="menu-btn" id="go-scan">📸 Kontoauszug scannen</button>
+      <button class="menu-btn" id="go-month">📊 Monatsübersicht</button>
+      <button class="menu-btn" id="go-year">📅 Jahresübersicht</button>
+    </div>
   </main>
+
+  <!-- Seite 2a: Import -->
+  <main id="page-scan" class="card hidden">
+    <button class="ghost small" data-back>← Zurück</button>
+    <h2>Kontoauszug scannen (OCR)</h2>
+    <section class="subcard">
+      <input type="file" id="img-file" accept="image/*">
+      <button id="btn-ocr-import">Screenshot lesen & direkt importieren</button>
+      <pre id="ocr-log" class="log" style="display:none"></pre>
+      <h4>Erkannte Zeilen</h4>
+      <table class="table"><thead><tr><th>Datum</th><th>Beschreibung</th><th>Kategorie</th><th class="right">Betrag</th></tr></thead><tbody id="ocr-preview"></tbody></table>
+    </section>
+  </main>
+
+  <!-- Seite 2b: Monatsübersicht -->
+  <main id="page-month" class="card hidden">
+    <button class="ghost small" data-back>← Zurück</button>
+    <h2>Monatsübersicht <span id="month-label"></span></h2>
+    <div id="import-banner" class="info hidden">
+      <strong>Zuletzt importiert:</strong>
+      <span id="import-banner-text"></span>
+      <details style="margin-top:6px">
+        <summary>Zeige importierte Zeilen</summary>
+        <table class="table" style="margin-top:6px">
+          <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead>
+          <tbody id="import-preview"></tbody>
+        </table>
+      </details>
+    </div>
+    <canvas id="month-pie" width="400" height="400"></canvas>
+    <ul id="month-legend" class="legend"></ul>
+    <h3>Details: <span id="month-cat-name">—</span></h3>
+    <table class="table">
+      <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead>
+      <tbody id="month-details"></tbody>
+    </table>
+  </main>
+
+  <!-- Seite 2c: Jahresübersicht -->
+  <main id="page-year" class="card hidden">
+    <button class="ghost small" data-back>← Zurück</button>
+    <h2>Jahresübersicht <span id="year-label"></span></h2>
+    <div id="year-months" class="list"></div>
+  </main>
+
+  <!-- Seite 3: Monatsdetail -->
+  <main id="page-month-detail" class="card hidden">
+    <button class="ghost small" data-back>← Zurück</button>
+    <h2><span id="detail-month-label"></span></h2>
+    <canvas id="detail-pie" width="400" height="400"></canvas>
+    <ul id="detail-legend" class="legend"></ul>
+    <h3>Details: <span id="detail-cat-name">—</span></h3>
+    <table class="table">
+      <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead>
+      <tbody id="detail-table"></tbody>
+    </table>
+  </main>
+
+  <script src="app.js?v=2620"></script>
 </body>
 </html>

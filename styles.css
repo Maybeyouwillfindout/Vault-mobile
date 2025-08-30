@@ -18,3 +18,5 @@ td.right{text-align:right}
 .menu{display:grid;gap:12px;grid-template-columns:1fr}
 .menu-btn{padding:14px 16px;font-size:16px}
 .log{background:#0b1020;color:#d9e1ff;border:1px solid #1c2540;border-radius:8px;padding:10px;min-height:60px;max-height:160px;overflow:auto}
+.info{background:#eef6ff;border:1px solid #cfe3ff;padding:10px;border-radius:10px;margin:8px 0}
+.list a{display:block;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;margin:6px 0;text-decoration:none;color:inherit}

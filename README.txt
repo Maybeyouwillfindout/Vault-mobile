@@ -1,1 +1,1 @@
-v2.4 – Auto-Login mit fixem Masterpasswort 'test1234'. Beinhaltet OCR-Import, Paste/CSV-Import, Regeln (Pattern + Min/Max), Kategorien-Auswertung.
+v2.4.1 – Sichtbarer Hinweis im Header: Auto-Login aktiv (PW = test1234). Sonst identisch zu v2.4.

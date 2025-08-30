@@ -2,7 +2,7 @@
   "name": "Vault Mobile",
   "short_name": "Vault",
   "display": "standalone",
-  "start_url": "./index.html?v=2640",
+  "start_url": "./index.html?v=2650",
   "theme_color": "#0a84ff",
   "background_color": "#f6f7fb",
   "icons": []

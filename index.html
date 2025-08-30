@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="de-CH">
 <head>
@@ -7,6 +8,8 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0a84ff">
   <link rel="stylesheet" href="styles.css">
+  <!-- Tesseract.js (CDN). Für reine Offline-Nutzung können wir später die Dateien lokal hosten. -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
   <header>
@@ -27,27 +30,87 @@
     <section class="card">
       <div class="row">
         <h2>Neue Buchung</h2>
-        <button id="btn-logout" class="ghost">Sperren</button>
+        <div class="row" style="gap:8px">
+          <button id="btn-logout" class="ghost">Sperren</button>
+        </div>
       </div>
       <div class="grid">
-        <div>
-          <label>Datum</label>
-          <input id="tx-date" type="date">
-        </div>
-        <div>
-          <label>Beschreibung</label>
-          <input id="tx-desc" placeholder="z. B. Migros, Coop, SBB">
-        </div>
-        <div>
-          <label>Betrag (CHF)</label>
-          <input id="tx-amount" type="number" step="0.01" placeholder="0.00">
-        </div>
-        <div>
-          <label>Kategorie</label>
-          <input id="tx-cat" placeholder="Lebensmittel">
+        <div><label>Datum</label><input id="tx-date" type="date"></div>
+        <div><label>Beschreibung</label><input id="tx-desc" placeholder="z. B. Migros, Coop, SBB"></div>
+        <div><label>Betrag (CHF)</label><input id="tx-amount" type="text" inputmode="decimal" placeholder="0.00"></div>
+        <div><label>Kategorie</label><input id="tx-cat" placeholder="Lebensmittel"></div>
+      </div>
+      <div class="row" style="gap:8px">
+        <button id="btn-add">Speichern</button>
+        <button id="btn-categorize" class="ghost">Alle ohne Kategorie → zuordnen</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>CSV-Import (Datei)</h2>
+      <input type="file" id="csv-file" accept=".csv">
+      <div class="grid">
+        <div><label>Trenner</label><input id="csv-delim" value=","></div>
+        <div><label>Spaltenname Datum</label><input id="csv-date" value="date"></div>
+        <div><label>Spaltenname Beschreibung</label><input id="csv-desc" value="description"></div>
+        <div><label>Spaltenname Betrag</label><input id="csv-amount" value="amount"></div>
+        <div><label>Spaltenname Kategorie (optional)</label><input id="csv-cat" value="category"></div>
+      </div>
+      <button id="btn-import">Import starten</button>
+    </section>
+
+    <section class="card">
+      <h2>Kontoauszug einfügen (Paste)</h2>
+      <textarea id="paste-area" rows="6" placeholder="2025-08-29; Migros Filiale 1234; -23,40; Lebensmittel"></textarea>
+      <div class="grid">
+        <div><label>Trenner</label><input id="paste-delim" value=";"></div>
+        <div><label>Spalten: Datum</label><input id="paste-date" value="0"></div>
+        <div><label>Spalten: Beschreibung</label><input id="paste-desc" value="1"></div>
+        <div><label>Spalten: Betrag</label><input id="paste-amount" value="2"></div>
+        <div><label>Spalten: Kategorie (optional)</label><input id="paste-cat" value=""></div>
+      </div>
+      <button id="btn-paste-import">Einfügen & Import</button>
+    </section>
+
+    <section class="card">
+      <h2>Screenshot-Import (OCR)</h2>
+      <p class="muted">Wähle einen Screenshot deines Kontoauszugs. Erfordert beim ersten Mal Internet (lädt OCR-Engine). Daten bleiben lokal.</p>
+      <input type="file" id="img-file" accept="image/*">
+      <div class="grid">
+        <div><label>Sprache</label><input id="ocr-lang" value="deu+eng"></div>
+        <div><label>Datumsformat erkennen</label>
+          <select id="ocr-datefmt">
+            <option value="auto">Auto (YYYY-MM-DD, DD.MM.YYYY)</option>
+            <option value="ymd">YYYY-MM-DD</option>
+            <option value="dmy">DD.MM.YYYY</option>
+          </select>
         </div>
       </div>
-      <button id="btn-add">Speichern</button>
+      <button id="btn-ocr">Screenshot lesen & erkennen</button>
+      <pre id="ocr-log" class="muted" style="white-space:pre-wrap;max-height:120px;overflow:auto;margin-top:8px"></pre>
+      <h3>Vorschau & Import</h3>
+      <table id="ocr-table">
+        <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag (CHF)</th></tr></thead>
+        <tbody id="ocr-body"></tbody>
+      </table>
+      <button id="btn-ocr-import" class="hidden">OCR-Ergebnisse importieren</button>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <h2>Regeln (Keyword/Regex + Betrag)</h2>
+        <div class="row" style="gap:8px">
+          <input id="rule-pattern" placeholder="Keyword oder /Regex/">
+          <input id="rule-min" type="text" inputmode="decimal" placeholder="Min-Betrag (optional)">
+          <input id="rule-max" type="text" inputmode="decimal" placeholder="Max-Betrag (optional)">
+          <input id="rule-category" placeholder="Kategorie">
+          <button id="btn-add-rule">Regel hinzufügen</button>
+        </div>
+      </div>
+      <table id="rule-table">
+        <thead><tr><th>Pattern</th><th>Min</th><th>Max</th><th>Kategorie</th><th class="right">Aktion</th></tr></thead>
+        <tbody id="rule-body"></tbody>
+      </table>
     </section>
 
     <section class="card">
@@ -57,6 +120,22 @@
         <tbody id="tbody"></tbody>
       </table>
       <div class="total">Summe: <span id="sum">0.00</span> CHF</div>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <h2>Auswertung nach Kategorien</h2>
+        <div class="row" style="gap:8px">
+          <label for="month">Monat</label>
+          <input type="month" id="month">
+          <button id="btn-alltime" class="ghost">Gesamt</button>
+        </div>
+      </div>
+      <table id="cat-table">
+        <thead><tr><th>Kategorie</th><th class="right">Summe (CHF)</th></tr></thead>
+        <tbody id="cat-body"></tbody>
+      </table>
+      <div class="total">Gesamt im Zeitraum: <span id="cat-sum">0.00</span> CHF</div>
     </section>
   </main>
 

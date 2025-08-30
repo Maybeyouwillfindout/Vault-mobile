@@ -1,1 +1,1 @@
-Vault Mobile v2 – Erste Anmeldung setzt das Master-Passwort und initialisiert den Tresor. Danach normales Login.
+v2.3 – Screenshot-OCR mit Tesseract.js (CDN), Betragsschwellen-Regeln, Paste/CSV-Import, Kategorien/Monatenauswertung.

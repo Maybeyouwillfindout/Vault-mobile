@@ -1,1 +1,1 @@
-Siehe README im vorherigen Schritt; PWA, lokal verschlüsselt, offline. Auf HTTPS hosten, dann 'Zum Home-Bildschirm'.
+Vault Mobile v2 – Erste Anmeldung setzt das Master-Passwort und initialisiert den Tresor. Danach normales Login.

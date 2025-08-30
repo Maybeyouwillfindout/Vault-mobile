@@ -1,0 +1,1 @@
+Siehe README im vorherigen Schritt; PWA, lokal verschlüsselt, offline. Auf HTTPS hosten, dann 'Zum Home-Bildschirm'.

@@ -1,1 +1,1 @@
-v2.3 – Screenshot-OCR mit Tesseract.js (CDN), Betragsschwellen-Regeln, Paste/CSV-Import, Kategorien/Monatenauswertung.
+v2.4 – Auto-Login mit fixem Masterpasswort 'test1234'. Beinhaltet OCR-Import, Paste/CSV-Import, Regeln (Pattern + Min/Max), Kategorien-Auswertung.

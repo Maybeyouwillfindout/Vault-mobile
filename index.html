@@ -8,7 +8,6 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0a84ff">
   <link rel="stylesheet" href="styles.css">
-  <!-- Tesseract.js (CDN). Für reine Offline-Nutzung können wir später die Dateien lokal hosten. -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
@@ -17,22 +16,16 @@
     <div id="status">offline-ready</div>
   </header>
 
-  <main id="screen-auth" class="card">
+  <!-- Auth-Screen bleibt im Markup, wird aber nicht genutzt -->
+  <main id="screen-auth" class="card hidden">
     <h2 id="auth-title">Anmelden</h2>
-    <p id="first-run" class="muted hidden">Erstmalige Einrichtung: Lege jetzt ein Master-Passwort fest. Dieses schützt deinen Tresor.</p>
-    <label>Passwort</label>
-    <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
-    <button id="btn-login">Fortfahren</button>
-    <p class="muted" style="margin-top:8px">Alles bleibt lokal & verschlüsselt.</p>
+    <p class="muted">Dieser Bildschirm ist in v2.4 deaktiviert (Auto-Login aktiv).</p>
   </main>
 
-  <main id="screen-app" class="hidden">
+  <main id="screen-app">
     <section class="card">
       <div class="row">
         <h2>Neue Buchung</h2>
-        <div class="row" style="gap:8px">
-          <button id="btn-logout" class="ghost">Sperren</button>
-        </div>
       </div>
       <div class="grid">
         <div><label>Datum</label><input id="tx-date" type="date"></div>
@@ -74,11 +67,11 @@
 
     <section class="card">
       <h2>Screenshot-Import (OCR)</h2>
-      <p class="muted">Wähle einen Screenshot deines Kontoauszugs. Erfordert beim ersten Mal Internet (lädt OCR-Engine). Daten bleiben lokal.</p>
+      <p class="muted">Erster OCR-Start benötigt Internet (Engine-Download). Daten bleiben lokal.</p>
       <input type="file" id="img-file" accept="image/*">
       <div class="grid">
         <div><label>Sprache</label><input id="ocr-lang" value="deu+eng"></div>
-        <div><label>Datumsformat erkennen</label>
+        <div><label>Datumsformat</label>
           <select id="ocr-datefmt">
             <option value="auto">Auto (YYYY-MM-DD, DD.MM.YYYY)</option>
             <option value="ymd">YYYY-MM-DD</option>

@@ -1,1 +1,1 @@
-v2.6 – komplette UI + Schweizer Parser + OCR + Kreisdiagramme. Auto-Login test1234.
+Vault Mobile v2.6.1 – mit OCR, Parser, Kreisdiagramm und Zuletzt-importiert Banner

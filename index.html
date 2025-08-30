@@ -1,35 +1,85 @@
+
 <!doctype html>
-<html lang="de">
+<html lang="de-CH">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vault Mobile v2.5.1</title>
+  <title>Vault Mobile v2.6</title>
   <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0a84ff">
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
-  <h1>Vault Mobile v2.5.1</h1>
-  <div id="status">Auto-Login aktiv (PW = test1234)</div>
-  <main id="page-home">
-    <button id="go-scan">Kontoauszug scannen</button>
-    <button id="go-month">Monatsübersicht</button>
-    <button id="go-year">Jahresübersicht</button>
+  <header>
+    <h1>Vault Mobile v2.6</h1>
+    <div id="status">Auto-Login aktiv (PW = test1234)</div>
+  </header>
+
+  <!-- Seite 1: Hauptmenü -->
+  <main id="page-home" class="card">
+    <h2>Was möchtest du tun?</h2>
+    <div class="menu">
+      <button class="menu-btn" id="go-scan">Kontoauszug scannen</button>
+      <button class="menu-btn" id="go-month">Monatsübersicht</button>
+      <button class="menu-btn" id="go-year">Jahresübersicht</button>
+    </div>
   </main>
-  <main id="page-scan" class="hidden">
-    <input type="file" id="img-file" accept="image/*">
-    <button id="btn-ocr">Screenshot lesen & erkennen</button>
-    <pre id="ocr-log"></pre>
-    <table><tbody id="ocr-body"></tbody></table>
-    <button id="btn-ocr-import" class="hidden">OCR-Ergebnisse importieren</button>
+
+  <!-- Seite 2a: Import -->
+  <main id="page-scan" class="card hidden">
+    <button class="ghost small" data-back>← Zurück</button>
+    <h2>Kontoauszug scannen</h2>
+
+    <section class="subcard">
+      <h3>Screenshot importieren (OCR)</h3>
+      <p class="muted">Beim ersten Mal benötigt die OCR-Engine Internet.</p>
+      <input type="file" id="img-file" accept="image/*">
+      <button id="btn-ocr">Screenshot lesen & erkennen</button>
+      <pre id="ocr-log" class="log" style="display:none"></pre>
+      <h4>Vorschau</h4>
+      <table class="table">
+        <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead>
+        <tbody id="ocr-body"></tbody>
+      </table>
+      <button id="btn-ocr-import" class="hidden">OCR-Ergebnisse importieren</button>
+    </section>
   </main>
-  <main id="page-month" class="hidden">
-    <h2>Monatsübersicht</h2>
-    <canvas id="month-pie"></canvas>
-    <ul id="month-legend"></ul>
-    <table><tbody id="month-details"></tbody></table>
+
+  <!-- Seite 2b: Monatsübersicht (aktueller Monat) -->
+  <main id="page-month" class="card hidden">
+    <button class="ghost small" data-back>← Zurück</button>
+    <h2>Monatsübersicht <span id="month-label"></span></h2>
+    <canvas id="month-pie" width="400" height="400"></canvas>
+    <ul id="month-legend" class="legend"></ul>
+    <h3>Details: <span id="month-cat-name">—</span></h3>
+    <table class="table">
+      <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead>
+      <tbody id="month-details"></tbody>
+    </table>
   </main>
+
+  <!-- Seite 2c: Jahresübersicht -->
+  <main id="page-year" class="card hidden">
+    <button class="ghost small" data-back>← Zurück</button>
+    <h2>Jahresübersicht <span id="year-label"></span></h2>
+    <div id="year-months" class="list"></div>
+  </main>
+
+  <!-- Seite 3: Monatsdetail -->
+  <main id="page-month-detail" class="card hidden">
+    <button class="ghost small" data-back>← Zurück</button>
+    <h2><span id="detail-month-label"></span></h2>
+    <canvas id="detail-pie" width="400" height="400"></canvas>
+    <ul id="detail-legend" class="legend"></ul>
+    <h3>Details: <span id="detail-cat-name">—</span></h3>
+    <table class="table">
+      <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead>
+      <tbody id="detail-table"></tbody>
+    </table>
+  </main>
+
   <script src="app.js"></script>
 </body>
 </html>

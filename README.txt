@@ -1,1 +1,1 @@
-v2.5.1 – Demo mit Parser für schweizer Kontoauszüge (DD.MM Text Betrag DD.MM.YY Saldo)
+v2.6 – komplette UI + Schweizer Parser + OCR + Kreisdiagramme. Auto-Login test1234.

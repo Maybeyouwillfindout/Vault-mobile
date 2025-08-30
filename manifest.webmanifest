@@ -1,6 +1,9 @@
 {
-  "name": "Vault Mobile Debug",
-  "short_name": "VaultDbg",
+  "name": "Vault Mobile",
+  "short_name": "Vault",
   "start_url": "./index.html",
-  "display": "standalone"
+  "display": "standalone",
+  "background_color": "#f6f7fb",
+  "theme_color": "#0a84ff",
+  "icons": []
 }

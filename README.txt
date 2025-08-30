@@ -1,1 +1,1 @@
-v2.4.1 – Sichtbarer Hinweis im Header: Auto-Login aktiv (PW = test1234). Sonst identisch zu v2.4.
+v2.5 – Menü-Navigation, Monatsübersicht (nur aktueller Monat), Jahresübersicht, Monatsdetail, Pie-Charts, CSV+OCR Import, Auto-Login test1234.

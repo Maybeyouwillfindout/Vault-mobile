@@ -1,18 +1,6 @@
-:root{--bg:#f6f7fb;--card:#fff;--txt:#0f1720;--muted:#5c6b79;--accent:#0a84ff;--border:#e6e9ef}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px}
-h1{font-size:20px;margin:0}#status{font-size:12px;color:var(--muted)}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:980px;margin:12px auto;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.hidden{display:none}label{display:block;margin-top:10px;font-size:14px;color:var(--muted)}
-input,button,textarea,select{width:100%;padding:10px 12px;margin-top:6px;border:1px solid var(--border);border-radius:10px;font:inherit}
-textarea{min-height:120px;resize:vertical}
-button{background:var(--accent);color:#fff;border:0;cursor:pointer}
-button.ghost{background:#eef3ff;color:#0f1720}
-.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin:6px 0}
-.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
-th{color:var(--muted);background:#fafbfd}
-td.right{text-align:right}.total{margin-top:8px;font-weight:600}.muted{color:var(--muted)}
-pre{background:#f4f6f9;border:1px solid var(--border);border-radius:8px;padding:8px}
+:root{--bg:#f6f7fb;--card:#fff;--txt:#0f1720;--muted:#5c6b79;--border:#e6e9ef}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'SF Pro Text','Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
+.card{max-width:980px;margin:12px auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px}
+.log{background:#0b1020;color:#d9e1ff;border:1px solid #1c2540;border-radius:8px;padding:10px;min-height:90px;max-height:200px;overflow:auto}
+table{width:100%;border-collapse:collapse;margin-top:10px} td,th{padding:8px;border-bottom:1px solid var(--border)}

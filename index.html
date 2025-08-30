@@ -1,110 +1,35 @@
-
 <!doctype html>
-<html lang="de-CH">
+<html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vault Mobile v2.5</title>
+  <title>Vault Mobile v2.5.1</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0a84ff">
   <link rel="stylesheet" href="styles.css">
-  <!-- Charts (first load needs internet; afterwards cached by PWA) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <!-- OCR (first load needs internet; afterwards cached by PWA) -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Vault Mobile v2.5</h1>
-    <div id="status">Auto-Login aktiv (PW = test1234)</div>
-  </header>
-
-  <!-- Page 1: Hauptmenü -->
-  <main id="page-home" class="card">
-    <h2>Was möchtest du tun?</h2>
-    <div class="menu">
-      <button class="menu-btn" id="go-scan">Kontoauszug scannen</button>
-      <button class="menu-btn" id="go-month">Monatsübersicht</button>
-      <button class="menu-btn" id="go-year">Jahresübersicht</button>
-    </div>
+  <h1>Vault Mobile v2.5.1</h1>
+  <div id="status">Auto-Login aktiv (PW = test1234)</div>
+  <main id="page-home">
+    <button id="go-scan">Kontoauszug scannen</button>
+    <button id="go-month">Monatsübersicht</button>
+    <button id="go-year">Jahresübersicht</button>
   </main>
-
-  <!-- Page 2a: Import -->
-  <main id="page-scan" class="card hidden">
-    <button class="ghost small" data-back>← Zurück</button>
-    <h2>Kontoauszug scannen</h2>
-
-    <section class="subcard">
-      <h3>Datei importieren (CSV)</h3>
-      <input type="file" id="csv-file" accept=".csv">
-      <div class="grid">
-        <div><label>Trenner</label><input id="csv-delim" value=","></div>
-        <div><label>Spalten: Datum</label><input id="csv-date" value="date"></div>
-        <div><label>Spalten: Beschreibung</label><input id="csv-desc" value="description"></div>
-        <div><label>Spalten: Betrag</label><input id="csv-amount" value="amount"></div>
-        <div><label>Spalten: Kategorie (optional)</label><input id="csv-cat" value="category"></div>
-      </div>
-      <button id="btn-import">Import starten</button>
-    </section>
-
-    <section class="subcard">
-      <h3>Screenshot importieren (OCR)</h3>
-      <p class="muted">Hinweis: Beim ersten Mal wird die OCR-Engine aus dem Internet geladen.</p>
-      <input type="file" id="img-file" accept="image/*">
-      <div class="grid">
-        <div><label>Sprache</label><input id="ocr-lang" value="deu+eng"></div>
-        <div><label>Datumsformat</label>
-          <select id="ocr-datefmt">
-            <option value="auto">Auto (YYYY-MM-DD, DD.MM.YYYY, DD.MM.YY)</option>
-            <option value="ymd">YYYY-MM-DD</option>
-            <option value="dmy">DD.MM.YYYY</option>
-          </select>
-        </div>
-      </div>
-      <button id="btn-ocr">Screenshot lesen & erkennen</button>
-      <pre id="ocr-log" class="log" style="display:none"></pre>
-      <h4>Vorschau</h4>
-      <table class="table">
-        <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead>
-        <tbody id="ocr-body"></tbody>
-      </table>
-      <button id="btn-ocr-import" class="hidden">OCR-Ergebnisse importieren</button>
-    </section>
+  <main id="page-scan" class="hidden">
+    <input type="file" id="img-file" accept="image/*">
+    <button id="btn-ocr">Screenshot lesen & erkennen</button>
+    <pre id="ocr-log"></pre>
+    <table><tbody id="ocr-body"></tbody></table>
+    <button id="btn-ocr-import" class="hidden">OCR-Ergebnisse importieren</button>
   </main>
-
-  <!-- Page 2b: Monatsübersicht (aktueller Monat) -->
-  <main id="page-month" class="card hidden">
-    <button class="ghost small" data-back>← Zurück</button>
-    <h2>Monatsübersicht <span id="month-label"></span></h2>
-    <canvas id="month-pie" width="400" height="400"></canvas>
-    <ul id="month-legend" class="legend"></ul>
-    <h3>Details: <span id="month-cat-name">—</span></h3>
-    <table class="table">
-      <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead>
-      <tbody id="month-details"></tbody>
-    </table>
+  <main id="page-month" class="hidden">
+    <h2>Monatsübersicht</h2>
+    <canvas id="month-pie"></canvas>
+    <ul id="month-legend"></ul>
+    <table><tbody id="month-details"></tbody></table>
   </main>
-
-  <!-- Page 2c: Jahresübersicht -->
-  <main id="page-year" class="card hidden">
-    <button class="ghost small" data-back>← Zurück</button>
-    <h2>Jahresübersicht <span id="year-label"></span></h2>
-    <div id="year-months" class="list"></div>
-  </main>
-
-  <!-- Page 3: Monatsdetail aus Jahresübersicht -->
-  <main id="page-month-detail" class="card hidden">
-    <button class="ghost small" data-back>← Zurück</button>
-    <h2><span id="detail-month-label"></span></h2>
-    <canvas id="detail-pie" width="400" height="400"></canvas>
-    <ul id="detail-legend" class="legend"></ul>
-    <h3>Details: <span id="detail-cat-name">—</span></h3>
-    <table class="table">
-      <thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead>
-      <tbody id="detail-table"></tbody>
-    </table>
-  </main>
-
   <script src="app.js"></script>
 </body>
 </html>

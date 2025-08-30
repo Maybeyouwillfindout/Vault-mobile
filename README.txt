@@ -1,1 +1,1 @@
-v2.5 – Menü-Navigation, Monatsübersicht (nur aktueller Monat), Jahresübersicht, Monatsdetail, Pie-Charts, CSV+OCR Import, Auto-Login test1234.
+v2.5.1 – Demo mit Parser für schweizer Kontoauszüge (DD.MM Text Betrag DD.MM.YY Saldo)

@@ -1,9 +1,9 @@
 {
   "name": "Vault Mobile",
   "short_name": "Vault",
-  "start_url": "./index.html?v=2620",
   "display": "standalone",
-  "background_color": "#f6f7fb",
+  "start_url": "./index.html?v=2630",
   "theme_color": "#0a84ff",
+  "background_color": "#f6f7fb",
   "icons": []
 }

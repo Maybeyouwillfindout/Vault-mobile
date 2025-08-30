@@ -1,15 +1,15 @@
 
-// v2.6.3 – improved Swiss OCR parser (stitching + robust amount detection)
+// v2.6.4 – fix False->false + richer OCR fallbacks/logging
 const FIXED_PASSWORD="test1234";
 
-// --- crypto + idb (same as 2.6.2) ---
+// --- crypto + idb ---
 const enc=new TextEncoder(),dec=new TextDecoder();
 function b64(b){return btoa(String.fromCharCode(...new Uint8Array(b)))}
 function ub64(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
 async function keyFrom(pwd,salt){const km=await crypto.subtle.importKey("raw",enc.encode(pwd),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:200000,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
 async function encJSON(k,o){const iv=crypto.getRandomValues(new Uint8Array(12));const pt=enc.encode(JSON.stringify(o));const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},k,pt);return{iv:b64(iv),ct:b64(ct)}}
 async function decJSON(k,b){const iv=ub64(b.iv),ct=ub64(b.ct);const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv},k,ct);return JSON.parse(dec.decode(pt))}
-function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("vault-db",14);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta");if(!db.objectStoreNames.contains("tx"))db.createObjectStore("tx",{keyPath:"id",autoIncrement:true});if(!db.objectStoreNames.contains("dups"))db.createObjectStore("dups",{keyPath:"hash"});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("vault-db",15);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("meta"))db.createObjectStore("meta");if(!db.objectStoreNames.contains("tx"))db.createObjectStore("tx",{keyPath:"id",autoIncrement:true});if(!db.objectStoreNames.contains("dups"))db.createObjectStore("dups",{keyPath:"hash"});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function metaSet(k,v){const db=await idb();const t=db.transaction("meta","readwrite");t.objectStore("meta").put(v,k);return new Promise(r=>t.oncomplete=r)}
 async function metaGet(k){const db=await idb();const t=db.transaction("meta","readonly");return new Promise(r=>{const q=t.objectStore("meta").get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>r(undefined)})}
 async function txAdd(e){const db=await idb();const t=db.transaction("tx","readwrite");t.objectStore("tx").add(e);return new Promise(r=>t.oncomplete=r)}
@@ -40,8 +40,7 @@ async function hashRec(r){const base=`${r.date}|${(r.amount||0).toFixed(2)}|${no
 
 // --- categories ---
 function categorize(r){
-  const d=norm(r.description); const amt=r.amount||0;
-  const has=(...k)=>k.some(x=>d.includes(x));
+  const d=norm(r.description); const amt=r.amount||0; const has=(...k)=>k.some(x=>d.includes(x));
   if(has('coop','migros','denner','aldi','lidl')) return 'Lebensmittel';
   if(has('sbb','vbz','zvv','postauto','tl ')) return 'ÖV';
   if(has('kfc','mcdonald','burger king','subway','cafe','café','restaurant','take away','kebab')) return 'Gastronomie';
@@ -52,11 +51,11 @@ function categorize(r){
   return 'Sonstiges';
 }
 
-// --- Swiss OCR parsing (improved) ---
+// --- improved Swiss OCR parsing (with fix) ---
 function joinLines(raw){
   const lines=raw.split(/\r?\n/).map(l=>l.replace(/[•··]/g,' ').replace(/\s{2,}/g,' ').trim());
   const out=[]; let cur=null;
-  const dateRe=/^\d{2}\.\d{2}(?!\.)/; // beginnt mit DD.MM (ohne Jahr)
+  const dateRe=/^\d{2}\.\d{2}(?!\.)/; // starts with DD.MM (no year)
   for(const ln of lines){
     if(!ln) continue;
     if(dateRe.test(ln)){ if(cur) out.push(cur); cur=ln; }
@@ -65,26 +64,22 @@ function joinLines(raw){
   if(cur) out.push(cur);
   return out;
 }
-
-// amount detection: choose penultimate numeric token (exclude dates/times)
 function pickAmountAndYear(stitched){
   const numRe=/[-+]?\d{1,3}(?:[\'\s\.]\d{3})*(?:[\.,]\d{2})/g;
   const dateYYRe=/(\d{2}\.\d{2}\.\d{2})(?!\d)/g;
   const timeRe=/\b\d{2}[:\.]\d{2}\b/g;
   const firstDM=(stitched.match(/\b\d{2}\.\d{2}\b/)||[])[0];
-  const yyMatch=Array.from(stitched.matchAll(dateYYRe)).pop(); // last dd.mm.yy
+  const yyMatch=Array.from(stitched.matchAll(dateYYRe)).pop();
   const yy = yyMatch ? yyMatch[1].split('.')[2] : String(new Date().getFullYear()).slice(-2);
-  // collect numeric tokens excluding time and the dd.mm itself
   const tokens = (stitched.match(numRe)||[]).filter(t=>{
-    if(firstDM && t.replace(',','.')===firstDM.replace(',','.')) return False;
-    if(timeRe.test(t)) return False;
-    return True;
+    if(firstDM && t.replace(',','.')===firstDM.replace(',','.')) return false; // <-- fixed
+    if(timeRe.test(t)) return false; // <-- fixed
+    return true;
   });
   if(tokens.length<1) return null;
   const amountToken = tokens.length>=2 ? tokens[tokens.length-2] : tokens[tokens.length-1];
   return { amount: parseAmt(amountToken), year2: yy };
 }
-
 function parseStitched(line){
   const firstDM=(line.match(/\b\d{2}\.\d{2}\b/)||[])[0];
   if(!firstDM) return null;
@@ -92,31 +87,28 @@ function parseStitched(line){
   if(!pick) return null;
   const [d,m]=firstDM.split('.'); const Y = pick.year2.length===2?`20${pick.year2}`:pick.year2;
   const date=`${Y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-  // description: everything between first date and before the right-side numbers & valuta date
   const desc=line.replace(/^\d{2}\.\d{2}\s*/,'')
-                 .replace(/\s\d{2}\.\d{2}\.\d{2}\b.*$/,'')  // drop valuta+saldo tail if present
+                 .replace(/\s\d{2}\.\d{2}\.\d{2}\b.*$/,'')
                  .trim();
   return {date, description: desc, amount: pick.amount};
 }
-
-function extractFromOCR(raw){
+function extractFromOCR(raw, logger){
   const stitched=joinLines(raw);
+  if(logger){ logger('— Stitch-Zeilen —\n'+stitched.join('\n')); }
   const out=[];
   for(const ln of stitched){
     const rec=parseStitched(ln);
     if(rec) out.push(rec);
   }
+  if(!out.length && logger){ logger('⚠️ Kein Treffer in Stitching – Fallback auf Einzelzeilen'); }
   if(!out.length){
-    // fallback: previous simple strategy
     const lines=raw.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-    for(const l of lines){
-      const m=parseStitched(l); if(m) out.push(m);
-    }
+    for(const l of lines){ const m=parseStitched(l); if(m) out.push(m); }
   }
   return out;
 }
 
-// --- chart + ui (minimal) ---
+// --- charts + ui ---
 function aggregate(rows){const m=new Map();for(const r of rows){const k=(r.category||'—')||'—';m.set(k,(m.get(k)||0)+(r.amount||0))}return[...m.entries()].sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]))}
 function buildPie(canvasId,legendId,items,onClick){
   const ctx=document.getElementById(canvasId);
@@ -130,78 +122,67 @@ function buildPie(canvasId,legendId,items,onClick){
   labels.forEach((l,i)=>{const v=data[i],p=total?Math.round(v/total*100):0;const li=document.createElement('li');li.innerHTML=`<span class="swatch" style="background:${colors[i]}"></span>${l} – ${v.toFixed(2)} CHF (${p}%)`;ul.appendChild(li)});
 }
 function renderTable(id,rows){document.getElementById(id).innerHTML=rows.map(r=>`<tr><td>${r.date}</td><td>${r.description}</td><td class="right">${(r.amount||0).toFixed(2)} CHF</td></tr>`).join('')||`<tr><td colspan="3" class="muted">Keine Daten</td></tr>`}
-
 function filterMonth(rows,ym){return rows.filter(r=>r.date && r.date.startsWith(ym))}
 function curYM(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
 
-// --- renderers ---
 async function showMonth(preferLast=true){
   const raws=await txAll(); const decd=[]; for(const e of raws){try{decd.push(await decJSON(aesKey,e))}catch{}}
-  let ym=curYM();
-  if(preferLast){const li=await metaGet('lastImport'); if(li?.ym) ym=li.ym;}
-  let rows=filterMonth(decd,ym);
-  if(!rows.length && decd.length){const months=[...new Set(decd.map(r=>r.date.slice(0,7)))].sort(); ym=months.pop(); rows=filterMonth(decd,ym);}
+  let ym=curYM(); const li=await metaGet('lastImport'); if(preferLast&&li?.ym) ym=li.ym;
+  let rows=filterMonth(decd,ym); if(!rows.length&&decd.length){const months=[...new Set(decd.map(r=>r.date.slice(0,7)))].sort(); ym=months.pop(); rows=filterMonth(decd,ym);}
   let html=`<div id="importBanner" class="info hidden"></div>
   <canvas id="pie" width="380" height="380"></canvas><ul id="legend" class="legend"></ul>
   <h3>Details: <span id="catName">—</span></h3>
   <table class="table"><thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead><tbody id="details"></tbody></table>`;
   document.getElementById('screen').innerHTML=`<h2>Monatsübersicht ${monthLabel(ym)}</h2>`+html;
-
-  // banner
-  const meta=await metaGet('lastImport'); const rowsPrev=await metaGet('lastImportRows')||[];
+  const meta=li; const rowsPrev=await metaGet('lastImportRows')||[];
   const banner=document.getElementById('importBanner');
   if(meta?.ym===ym && rowsPrev.length){ banner.classList.remove('hidden'); banner.innerHTML=`<strong>Zuletzt importiert:</strong> ${meta.count} Buchung(en) in ${monthLabel(ym)} (vor ${Math.max(1,Math.round((Date.now()-meta.ts)/60000))} Min)
   <details style="margin-top:6px"><summary>Zeige importierte Zeilen</summary>
   <table class="table" style="margin-top:6px"><thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead><tbody>${
     rowsPrev.filter(r=>r.date?.startsWith(ym)).map(r=>`<tr><td>${r.date}</td><td>${r.description}</td><td class="right">${(r.amount||0).toFixed(2)} CHF</td></tr>`).join('')||'<tr><td colspan="3" class="muted">Keine Zeilen</td></tr>'
   }</tbody></table></details>`; }
-
   const items=aggregate(rows);
-  buildPie('pie','legend',items,(cat)=>{
-    document.getElementById('catName').textContent=cat; renderTable('details',rows.filter(r=>(r.category||'—')===cat));
-  });
+  buildPie('pie','legend',items,(cat)=>{document.getElementById('catName').textContent=cat; renderTable('details',rows.filter(r=>(r.category||'—')===cat));});
   if(items.length){const first=items[0][0]; document.getElementById('catName').textContent=first; renderTable('details',rows.filter(r=>(r.category||'—')===first));}
 }
 
 async function showYear(){
   const raws=await txAll(); const decd=[]; for(const e of raws){try{decd.push(await decJSON(aesKey,e))}catch{}}
-  const y=(new Date()).getFullYear();
-  const list=[...new Set(decd.filter(r=>r.date.startsWith(String(y))).map(r=>r.date.slice(0,7)))].sort();
+  const y=(new Date()).getFullYear(); const months=[...new Set(decd.filter(r=>r.date.startsWith(String(y))).map(r=>r.date.slice(0,7)))].sort();
   document.getElementById('screen').innerHTML=`<h2>Jahresübersicht ${y}</h2><div id="months"></div>`;
-  const c=document.getElementById('months');
-  list.forEach(ym=>{const sum=filterMonth(decd,ym).reduce((a,b)=>a+(b.amount||0),0);
-    const a=document.createElement('a'); a.href='#'; a.textContent=`${monthLabel(ym)} – ${sum.toFixed(2)} CHF`; a.onclick=(e)=>{e.preventDefault(); showMonth(false)}; c.appendChild(a);
-  })
+  const c=document.getElementById('months'); months.forEach(ym=>{const sum=filterMonth(decd,ym).reduce((a,b)=>a+(b.amount||0),0);const a=document.createElement('a');a.href='#';a.textContent=`${monthLabel(ym)} – ${sum.toFixed(2)} CHF`;a.onclick=(e)=>{e.preventDefault();showMonth(false)};c.appendChild(a);});
 }
 
 function scanScreen(){
   document.getElementById('screen').innerHTML=`<h2>OCR Import</h2>
   <input type="file" id="file" accept="image/*"><button id="go">Screenshot lesen & importieren</button>
   <pre id="log" class="log" style="display:none"></pre>
+  <details><summary>Erkannter Rohtext</summary><pre id="raw" class="log" style="display:none"></pre></details>
   <table class="table"><thead><tr><th>Datum</th><th>Beschreibung</th><th class="right">Betrag</th></tr></thead><tbody id="prev"></tbody></table>`;
   const log=(m)=>{const el=document.getElementById('log'); el.style.display='block'; el.textContent+=(el.textContent?'\n':'')+m; el.scrollTop=el.scrollHeight;}
+  const setRaw=(t)=>{const el=document.getElementById('raw'); el.style.display='block'; el.textContent=t || '(leer)';}
   document.getElementById('go').onclick=async()=>{
     const f=document.getElementById('file').files[0]; if(!f) return alert('Bitte Bild wählen.');
     if(!window.Tesseract) return alert('OCR Engine benötigt Internet beim ersten Mal.');
     try{
       log('⏳ OCR startet…'); const w=await Tesseract.createWorker('deu+eng',1,{logger:m=>m.status&&log('Tesseract: '+m.status)});
       const res=await w.recognize(await f.arrayBuffer()); await w.terminate(); log('✅ OCR beendet.');
-      const rows=extractFromOCR(res?.data?.text||''); rows.forEach(r=>r.category=categorize(r));
-      document.getElementById('prev').innerHTML=rows.map(r=>`<tr><td>${r.date}</td><td>${r.description}</td><td class="right">${r.amount.toFixed(2)} CHF</td></tr>`).join('')||'<tr><td colspan="3" class="muted">Keine Daten</td></tr>';
+      const raw=res?.data?.text||''; setRaw(raw);
+      const rows=extractFromOCR(raw, log); rows.forEach(r=>r.category=categorize(r));
+      document.getElementById('prev').innerHTML=rows.map(r=>`<tr><td>${r.date}</td><td>${r.description}</td><td class="right">${r.amount.toFixed(2)} CHF</td></tr>`).join('')||'<tr><td colspan="3" class="muted">Keine Daten erkannt</td></tr>';
       // save with dedupe
       let imported=0; for(const r of rows){const h=await hashRec(r); if(await dupHas(h)) continue; await txAdd(await encJSON(aesKey,r)); await dupAdd(h); imported++;}
-      if(imported){const ym=rows.find(r=>r.date)?.date?.slice(0,7)||curYM(); await metaSet('lastImport',{ym,ts:Date.now(),count:rows.length}); await metaSet('lastImportRows',rows.slice(-50)); await showMonth(true);}
+      if(imported){const d=rows.find(r=>r.date)?.date?.slice(0,7)||((new Date()).toISOString().slice(0,7)); await metaSet('lastImport',{ym:d,ts:Date.now(),count:rows.length}); await metaSet('lastImportRows',rows.slice(-50)); await showMonth(true);}
     }catch(e){log('❌ Fehler: '+(e?.message||e));}
   };
 }
 
 // bootstrap
 window.addEventListener('load', async ()=>{
-  if('serviceWorker' in navigator){try{await navigator.serviceWorker.register('./sw.js?v=2630')}catch{}}
+  if('serviceWorker' in navigator){try{await navigator.serviceWorker.register('./sw.js?v=2640')}catch{}}
   await autoLogin();
   document.getElementById('btn-scan').onclick=scanScreen;
   document.getElementById('btn-month').onclick=()=>showMonth(true);
   document.getElementById('btn-year').onclick=showYear;
-  // Start direkt mit Scan
   scanScreen();
 });

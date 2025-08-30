@@ -1,1 +1,1 @@
-v2.6.3 – Verbesserter Swiss-OCR-Parser (Zeilenstitching, Betrag=vorletzte Zahl, Datum/Zeiten ausgeschlossen).
+v2.6.4 – Fix JS `false`, verbessertes Logging (Rohtext + Stitch-Ausgabe), gleiche Parser-Verbesserungen wie 2.6.3.

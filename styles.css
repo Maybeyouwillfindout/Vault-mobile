@@ -9,4 +9,4 @@ button{padding:12px 14px;background:var(--accent);color:#fff;border:0;border-rad
 .table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid var(--border);text-align:left}
 .right{text-align:right} .muted{color:var(--muted)} .info{background:#eef6ff;border:1px solid #cfe3ff;padding:10px;border-radius:10px;margin:10px 0}
 .legend{list-style:none;padding:0} .legend li{margin:6px 0}.legend .swatch{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:6px;border:1px solid rgba(0,0,0,.1)}
-.log{background:#0b1020;color:#d9e1ff;border-radius:8px;padding:8px;max-height:160px;overflow:auto;margin:8px 0}
+.log{background:#0b1020;color:#d9e1ff;border-radius:8px;padding:8px;max-height:220px;overflow:auto;margin:8px 0;white-space:pre-wrap}

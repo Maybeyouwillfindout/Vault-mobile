@@ -3,22 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vault Mobile v2.7.2</title>
+  <title>Vault Mobile v2.7.3</title>
   <meta name="theme-color" content="#0a84ff">
-  <link rel="manifest" href="manifest.webmanifest?v=2720">
-  <link rel="stylesheet" href="styles.css?v=2720">
+  <link rel="manifest" href="manifest.webmanifest?v=2730">
+  <link rel="stylesheet" href="styles.css?v=2730">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="app.js?v=2720" defer></script>
+  <!-- PDF.js for embedded text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.mjs" type="module"></script>
+  <!-- OCR fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="app.js?v=2730" defer></script>
 </head>
 <body>
   <header>
-    <h1>Vault Mobile v2.7.2</h1>
+    <h1>Vault Mobile v2.7.3</h1>
     <div id="status">Auto-Login aktiv (PW = test1234)</div>
   </header>
   <main class="card">
     <div class="menu">
       <button id="btn-import">📥 Datei importieren</button>
+      <button id="btn-scan">📸 Screenshot-OCR</button>
       <button id="btn-month">📊 Monatsübersicht</button>
       <button id="btn-year">📅 Jahresübersicht</button>
       <button id="btn-review">📈 Jahresrückblick</button>
